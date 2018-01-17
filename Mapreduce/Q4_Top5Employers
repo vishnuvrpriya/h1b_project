@@ -1,0 +1,164 @@
+import java.io.IOException;
+import java.util.TreeMap;
+
+
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.LongWritable.DecreasingComparator;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+
+public class Top5Employers {
+
+	
+public static class Top5EmployersMapper extends Mapper<LongWritable,Text,Text,LongWritable>
+	
+	{
+		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
+		{
+			
+			
+			String h1bdata[] = value.toString().split("\t");
+			
+			String year = h1bdata[7];
+			String employer = h1bdata[2];
+			
+		
+			String myKey = year + "," + employer;
+			
+			context.write(new Text(myKey),new LongWritable(1));
+					
+		}
+	}
+
+
+
+public static class Top5EmployersPartitioner extends Partitioner<Text,LongWritable>
+{
+	
+	public int getPartition(Text key,LongWritable value,int numReduceTasks)
+	{
+		String mapKey[] = key.toString().split(",");
+		
+		String year = mapKey[0];
+		
+		
+		if(mapKey[0].equals("2011")) 
+		{
+			return 1;
+		
+		}
+		
+
+		if(mapKey[0].equals("2012"))
+		{
+			return 2;
+		
+		}
+
+		if(mapKey[0].equals("2013")) 
+		{
+			return 3;
+		
+		}
+
+		if(mapKey[0].equals("2014"))
+		{
+			return 4;
+		
+		}
+
+		if(mapKey[0].equals("2015"))
+		{
+			return 5;
+		
+		}
+
+		if(mapKey[0].equals("2016"))
+		{
+			return 6;
+		
+		}
+		else
+			return 7;
+	
+	}
+}
+	
+
+public static class Top5EmployersReducer extends Reducer<Text,LongWritable,NullWritable,Text>
+{
+		TreeMap<Long,Text> top5employers = new TreeMap<Long,Text>();
+		
+	public void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException,InterruptedException
+	{		
+			long employercount = 0;
+		
+		
+			for(LongWritable eachVal : values)
+			{
+				employercount++;
+			}
+			
+			String myKey = key.toString();
+			
+			String myVal = key + "," +employercount;
+			
+			top5employers.put(new Long(employercount),new Text(myVal));
+			
+			if(top5employers.size() > 5)
+			{
+				top5employers.remove(top5employers.firstKey());
+			}
+			
+			
+			
+			//String countInfo = "The value of  employercount is" + "\t" + String.format("%d",employercount); 
+			
+	
+	}
+	
+	public void cleanup(Context context) throws IOException,InterruptedException
+	{
+			for(Text top5val : top5employers.descendingMap().values())
+			{
+				
+				context.write(NullWritable.get(),top5val);
+			}
+	}
+}
+
+public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
+{
+	Configuration conf = new Configuration();
+	conf.set("mapreduce.textOutputformat.seperator","\t");
+	Job job = Job.getInstance(conf);
+	job.setJarByClass(Top5Employers.class);
+	job.setMapperClass(Top5EmployersMapper.class);
+	job.setPartitionerClass(Top5EmployersPartitioner.class);
+	job.setReducerClass(Top5EmployersReducer.class);
+	job.setNumReduceTasks(7);
+	job.setMapOutputKeyClass(Text.class);
+	job.setMapOutputValueClass(LongWritable.class);
+	job.setOutputKeyClass(Text.class);
+	job.setOutputValueClass(NullWritable.class);
+	
+	FileInputFormat.addInputPath(job,new Path(args[0]));
+	FileOutputFormat.setOutputPath(job,new Path(args[1]));
+	
+	job.waitForCompletion(true);
+}
+}
+
