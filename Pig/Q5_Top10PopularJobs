@@ -9,49 +9,49 @@ job_positions_count = FOREACH job_positions_grouped_by_year GENERATE group,group
 jobs_data_filtered= order job_positions_count by $2 DESC;
 --dump jobs_data_filtered;
 --describe jobs_data_filtered;
-store jobs_data_filtered into '/home/hduser/Q5_pig_total.pig';
+store jobs_data_filtered into '/home/hduser/Q5_pig_total';
 --*Top10 jobs for each year
 --2011
 val_2011 = FILTER jobs_data_filtered by group.$0 == '2011';
 sorted_2011 = order val_2011 by $2 DESC;
 jobs_top10_2011 = limit sorted_2011 10;
 jobs_top10_2011_values = FOREACH jobs_top10_2011 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2011_values into '/home/hduser/Q5_pig_2k11.pig';
+store jobs_top10_2011_values into '/home/hduser/Q5_pig_2k11';
 --*Top10 jobs for each year
 --2012
 val_2012 = FILTER jobs_data_filtered by group.$0 == '2012';
 sorted_2012 = order val_2012 by $2 DESC;
 jobs_top10_2012 = limit sorted_2012 10;
 jobs_top10_2012_values = FOREACH jobs_top10_2012 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2012_values into '/home/hduser/Q5_pig_2k12.pig';
+store jobs_top10_2012_values into '/home/hduser/Q5_pig_2k12';
 --*Top10 jobs for each year
 --2013
 val_2013 = FILTER jobs_data_filtered by group.$0 == '2013';
 sorted_2013 = order val_2013 by $2 DESC;
 jobs_top10_2013 = limit sorted_2013 10;
 jobs_top10_2013_values = FOREACH jobs_top10_2013 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2013_values into '/home/hduser/Q5_pig_2k13.pig';
+store jobs_top10_2013_values into '/home/hduser/Q5_pig_2k13';
 --*Top10 jobs for each year
 --2014
 val_2014 = FILTER jobs_data_filtered by group.$0 == '2014';
 sorted_2014 = order val_2014 by $2 DESC;
 jobs_top10_2014 = limit sorted_2014 10;
 jobs_top10_2014_values = FOREACH jobs_top10_2014 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2014_values into '/home/hduser/Q5_pig_2k14.pig';
+store jobs_top10_2014_values into '/home/hduser/Q5_pig_2k14';
 --*Top10 jobs for each year
 --2015
 val_2015 = FILTER jobs_data_filtered by group.$0 == '2015';
 sorted_2015 = order val_2015 by $2 DESC;
 jobs_top10_2015 = limit sorted_2015 10;
 jobs_top10_2015_values = FOREACH jobs_top10_2015 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2015_values into '/home/hduser/Q5_pig_2k15.pig';
+store jobs_top10_2015_values into '/home/hduser/Q5_pig_2k15';
 --*Top10 jobs for each year
 --2016
 val_2016 = FILTER jobs_data_filtered by group.$0 == '2016';
 sorted_2016 = order val_2016 by $2 DESC;
 jobs_top10_2016 = limit sorted_2016 10;
 jobs_top10_2016_values = FOREACH jobs_top10_2016 GENERATE FLATTEN(group),$2 as jobcount;
-store jobs_top10_2016_values into '/home/hduser/Q5_pig_2k16.pig';
+store jobs_top10_2016_values into '/home/hduser/Q5_pig_2k16';
 
 
 
