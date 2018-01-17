@@ -1,0 +1,2 @@
+
+select count(job_title) as jobcount,year,(100*(count(job_title)-lag(count(job_title),1) over (order by year)) / lag(count(job_title) , 1) over (order by year)) as growth from h1b_final group by year order by growth desc limit 5;
