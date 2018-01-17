@@ -1,2 +1,2 @@
 
-select count(*) as apps,soc_name,year from h1b_final where job_title = 'DATA ENGINEER' and case_status = 'CERTIFIED' group by soc_name,year order by apps desc limit 1;
+select count(job_title) as jobapps,soc_name from h1b_final where job_title = 'DATA ENGINEER' and case_status = 'CERTIFIED' group by soc_name order by jobapps desc limit 1;
