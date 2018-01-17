@@ -1,0 +1,180 @@
+import java.io.IOException;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.LongWritable.DecreasingComparator;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+
+public class USParts {
+	
+public static class USPartsMapper extends Mapper<LongWritable,Text,Text,LongWritable>
+	
+	{
+		
+		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
+		{
+			String mySearchText = context.getConfiguration().get("myText");
+			
+			String h1bdata[] = value.toString().split("\t");
+			
+			String caseStatus = h1bdata[1];
+			String worksite = h1bdata[8];
+			String year = h1bdata[7];
+			String jobtitle = h1bdata[4];
+			
+			if(mySearchText.equalsIgnoreCase("all"))
+				
+			{
+				if(jobtitle.contains("DATA ENGINEER") && caseStatus.equals("CERTIFIED"))
+				{
+			
+			String myKey = worksite + ";" + year;
+			
+			context.write(new Text(myKey),new LongWritable(1));
+				}
+			}
+			
+			else
+				{
+				
+				if(jobtitle.contains("DATA ENGINEER") && caseStatus.equals("CERTIFIED") && year.equals(mySearchText))
+				{
+				
+					String myKey = worksite + ";" + year;
+					
+					context.write(new Text(myKey),new LongWritable(1));
+			
+				}
+			}
+			
+		}
+	}
+
+
+public static class USPartsPartitioner extends Partitioner<Text,LongWritable>
+{
+	
+	public int getPartition(Text key,LongWritable value,int numReduceTasks)
+	{
+	
+		String mapKey[] = key.toString().split(";");
+		
+		String worksite = mapKey[0];
+		String year = mapKey[1];
+		
+		if(year.equals("2011"))
+		{
+			return 1;
+		
+		}
+		
+
+		if(year.equals("2012"))
+		{
+			return 2;
+		
+		}
+
+		if(year.equals("2013"))
+		{
+			return 3;
+		
+		}
+
+		if(year.equals("2014"))
+		{
+			return 4;
+		
+		}
+
+		if(year.equals("2015"))
+		{
+			return 5;
+		
+		}
+
+		if(year.equals("2016"))
+		{
+			return 6;
+		
+		}
+		else
+			return 7;
+	}
+	
+}
+
+
+public static class USPartsReducer extends Reducer<Text,LongWritable,Text,LongWritable>
+{
+		Text maxKey = new Text();
+		long maxcount = 0;
+	
+	public void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException,InterruptedException
+	{
+	
+		long statecnt = 0;
+	
+		for(LongWritable eachval : values)
+			
+		{
+			 	statecnt+=eachval.get();
+			 	
+			 	if(statecnt > maxcount)
+			 	{
+			 	
+			 		maxcount = statecnt;
+			 		maxKey.set(key);
+			 	}
+			 		
+		}
+	}
+		
+@Override
+public void cleanup(Context context) throws IOException,InterruptedException
+	{
+			context.write(maxKey, new LongWritable(maxcount));
+	}
+		}
+
+
+public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
+{
+	Configuration conf = new Configuration();
+	if(args.length >2)
+	{
+		conf.set("myText", args[2]);
+	}
+	conf.set("mapreduce.textOutputformat.seperator","/t");
+	Job job = Job.getInstance(conf);
+	job.setJarByClass(USParts.class);
+	job.setMapperClass(USPartsMapper.class);
+	
+	if (args[2].equals("all"))
+	{
+	job.setPartitionerClass(USPartsPartitioner.class);
+	job.setNumReduceTasks(7);
+	}
+	job.setReducerClass(USPartsReducer.class);
+	job.setSortComparatorClass(LongWritable.DecreasingComparator.class);
+	job.setOutputKeyClass(Text.class);
+	job.setOutputValueClass(LongWritable.class);
+	
+	FileInputFormat.addInputPath(job,new Path(args[0]));
+	FileOutputFormat.setOutputPath(job,new Path(args[1]));
+	
+	job.waitForCompletion(true);
+}
+}
