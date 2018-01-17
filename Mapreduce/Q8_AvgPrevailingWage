@@ -1,0 +1,200 @@
+import java.io.IOException;
+
+
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.LongWritable.DecreasingComparator;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+
+public class AvgWage {
+
+	
+public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWritable>
+	
+	{
+		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
+		{
+			String h1bdata[] = value.toString().split("\t");
+			
+			String caseStatus = h1bdata[1];
+			String year = h1bdata[7];
+			String jobtitle = h1bdata[4];
+			String workPosition = h1bdata[5];
+			String wages = h1bdata[6];
+			
+			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN"))
+			{
+			
+			double wage = Double.parseDouble(wages);
+			
+			String myKey = year+";"+jobtitle+";"+caseStatus+";"+workPosition;
+			
+			context.write(new Text(myKey),new DoubleWritable(wage));
+			}
+			
+		}
+	}
+
+
+public static class AvgWagePartitioner extends Partitioner<Text,DoubleWritable>
+{
+	
+	public int getPartition(Text key,DoubleWritable value,int numReduceTasks)
+	{
+	
+		String mapKey[] = key.toString().split(";");
+		
+		String year = mapKey[0];
+		
+		
+		if(mapKey[0].equals("2011")) 
+		{
+			return 1;
+		
+		}
+		
+
+		if(mapKey[0].equals("2012"))
+		{
+			return 2;
+		
+		}
+
+		if(mapKey[0].equals("2013")) 
+		{
+			return 3;
+		
+		}
+
+		if(year.equals("2014"))
+		{
+			return 4;
+		
+		}
+
+		if(year.equals("2015"))
+		{
+			return 5;
+		
+		}
+
+		if(year.equals("2016"))
+		{
+			return 6;
+		
+		}
+		else
+			return 7;
+	}
+	
+}
+
+
+public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,Text>
+{
+				double total = 0.0;
+	
+	public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException,InterruptedException
+	{
+
+				
+				String reduceKey[] = key.toString().split(";");
+				String caseStatus = reduceKey[2];
+				String workPosition = reduceKey[3];
+				
+				
+				double certified_f = 0.0;
+				double certified_p = 0.0;
+				double certified_wd_f = 0.0;
+				double certified_wd_p = 0.0;
+				
+				double cert_f_avg = 0.0;
+				double cert_p_avg = 0.0;
+				double cert_wd_f_avg = 0.0;
+				double cert_wd_p_avg = 0.0;
+				
+			for(DoubleWritable eachval : values)
+			
+		{ 
+				
+			if(reduceKey[2].equals("CERTIFIED")) 
+					
+			{
+				if(reduceKey[3].equals("Y"))
+				{
+				certified_f+= eachval.get();
+				}
+				
+				else if(reduceKey[3].equals("N"))
+				certified_p+= eachval.get();
+			}
+			
+						
+			
+			 if(reduceKey[2].equals("CERTIFIED-WITHDRAWN")) 
+			{
+				 if(reduceKey[3].equals("Y"))
+				certified_wd_f+= eachval.get();
+				 
+				 else if(reduceKey[3].equals("N"))
+				certified_wd_p+= eachval.get();
+			}
+				
+			
+			 total++;
+		}
+			
+			
+			
+			
+			 cert_f_avg = (certified_f)/total;
+			 cert_p_avg = (certified_p)/total;
+			 cert_wd_f_avg = (certified_wd_f)/total;
+			 cert_wd_p_avg = (certified_wd_p)/total;
+			 
+			
+		
+			//String myCount = String.format("%f\t%f\t%f\t%f", certified_f, certified_p, certified_wd_f, certified_wd_p);
+			
+			 String myValue = String.format("%f", cert_f_avg) +","+String.format("%f", cert_p_avg)+","+String.format("%f", cert_wd_f_avg)+","+String.format("%f", cert_wd_p_avg);
+		
+		context.write(key,new Text(myValue));
+		
+		
+	}
+}
+
+public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
+{
+	Configuration conf = new Configuration();
+	conf.set("mapreduce.textOutputformat.seperator","/t");
+	Job job = Job.getInstance(conf);
+	job.setJarByClass(AvgWage.class);
+	job.setMapperClass(AvgWageMapper.class);
+	job.setPartitionerClass(AvgWagePartitioner.class);
+	job.setReducerClass(AvgWageReducer.class);
+	job.setSortComparatorClass(DecreasingComparator.class);
+	job.setNumReduceTasks(7);
+	job.setMapOutputKeyClass(Text.class);
+	job.setMapOutputValueClass(DoubleWritable.class);
+	job.setOutputKeyClass(Text.class);
+	job.setOutputValueClass(Text.class);
+	
+	FileInputFormat.addInputPath(job,new Path(args[0]));
+	FileOutputFormat.setOutputPath(job,new Path(args[1]));
+	
+	job.waitForCompletion(true);
+}
+}
