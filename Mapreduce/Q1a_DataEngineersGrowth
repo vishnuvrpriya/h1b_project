@@ -88,9 +88,12 @@ public static class DataJobReducer extends Reducer<Text,LongWritable,Text,LongWr
 					
 					growthval = (dejobinfo[i]-dejobinfo[i-1])*100/(dejobinfo[i-1]);
 				
-					//growthcycles++;
-				
-					//long avggrowthpercycle = avgval/growthcycles;
+					//for(j = 0; j < 6; j++)
+					//{
+					//growthcycles+=growthcycles;
+					//}
+					
+					//long avggrowthpercycle = growthcycles/5;
 				
 					context.write(new Text(years[i]), new LongWritable (growthval));
 				}
