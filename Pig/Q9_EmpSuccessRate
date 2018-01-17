@@ -1,0 +1,30 @@
+--**Load and take the required data
+h1bdata = load '/home/hduser/h1bfinaldata.txt' using PigStorage('\t') as (s_no:int, case_status:chararray , employer_name:chararray , soc_name:chararray , job_title:chararray , full_time_position:chararray ,prevailing_wage:long ,year:chararray , worksite:chararray , longitute:double, latitute:double);
+--*Calculate total applications for all case status
+emp_grouped = group h1bdata BY $2;
+emp_total_count = FOREACH emp_grouped GENERATE group,COUNT($1) as totalcasecount;
+--dump emp_grouped;
+--describe emp_total_count;
+--*Take only certified and count certified
+cert = FILTER h1bdata by $1 == 'CERTIFIED';
+cert_grouped = group cert by $2;
+cert_count = FOREACH cert_grouped GENERATE group,COUNT(cert.$1);
+--dump cert_count;
+--describe cert_count;
+--*Take only certified-withdrawn and count certified-withdrawn
+cert_wd = FILTER h1bdata by $1 == 'CERTIFIED-WITHDRAWN';
+cert_wd_grouped = group cert_wd by $2;
+cert_wd_count = FOREACH cert_wd_grouped GENERATE group,COUNT(cert_wd.$1);
+--dump cert_wd_count;
+--describe cert_wd_count;
+--*Join the tables
+joined = join cert_count by $0,cert_wd_count by $0,emp_total_count by $0;
+--dump joined;
+--*Perform percent calculation and filter the output where percent > 70% and total petitions > 1000
+joined_data = FOREACH joined GENERATE $0,$1,$3,$5;
+emp_percent = FOREACH joined_data GENERATE $0, (float) ($1+$2)*100/($3), $3;
+emp_percent_filtered = FILTER emp_percent by $1>70 and $2>1000;
+emp_percent_ordered = order emp_percent_filtered by $1 DESC;
+--dump emp_percent_ordered;
+--describe emp_percent_ordered;
+store emp_percent_ordered into '/home/hduser/Q9_pig';
