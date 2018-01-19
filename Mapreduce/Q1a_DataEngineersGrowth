@@ -26,12 +26,15 @@ public static class DataJobMapper extends Mapper<LongWritable,Text,Text,LongWrit
 	{
 		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
 		{
-			
+			String mySearchText = context.getConfiguration().get("myText");
 			
 			String h1bdata[] = value.toString().split("\t");
 			
 			String year = h1bdata[7];
 			String jobtitle = h1bdata[4];
+			
+			if(mySearchText.equalsIgnoreCase("all"))
+		{
 			
 			if(h1bdata[4].equalsIgnoreCase("DATA ENGINEER"))			
 			{
@@ -40,6 +43,18 @@ public static class DataJobMapper extends Mapper<LongWritable,Text,Text,LongWrit
 			context.write(new Text(myKey),new LongWritable(1));
 			
 			}
+		}
+		
+		else
+		{
+			if(h1bdata[4].equalsIgnoreCase("DATA ENGINEER")) && year.equals(mySearchText))			
+			{
+			String myKey = year + "," + jobtitle;
+			
+			context.write(new Text(myKey),new LongWritable(1));
+			
+			}
+		}
 			
 		}
 	}
@@ -107,12 +122,20 @@ public static class DataJobReducer extends Reducer<Text,LongWritable,Text,LongWr
 public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
 {
 	Configuration conf = new Configuration();
+	if(args.length >2)
+	{
+		conf.set("myText", args[2]);
+	}
 	conf.set("mapreduce.textOutputformat.seperator","\t");
 	Job job = Job.getInstance(conf);
 	job.setJarByClass(DataJob.class);
 	job.setMapperClass(DataJobMapper.class);
 	job.setReducerClass(DataJobReducer.class);
+	if (args[2].equals("all"))
+	{
+	job.setPartitionerClass(DataJobPartitioner.class);
 	job.setNumReduceTasks(1);
+	}
 	job.setMapOutputKeyClass(Text.class);
 	job.setMapOutputValueClass(LongWritable.class);
 	job.setOutputKeyClass(Text.class);
