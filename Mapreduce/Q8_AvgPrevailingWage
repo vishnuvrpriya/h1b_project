@@ -26,6 +26,8 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 	{
 		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
 		{
+			String mySearchText = context.getConfiguration().get("myText");
+			
 			String h1bdata[] = value.toString().split("\t");
 			
 			String caseStatus = h1bdata[1];
@@ -34,6 +36,8 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 			String workPosition = h1bdata[5];
 			String wages = h1bdata[6];
 			
+			if(mySearchText.equalsIgnoreCase("all"))
+		{
 			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN"))
 			{
 			
@@ -43,6 +47,18 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 			
 			context.write(new Text(myKey),new DoubleWritable(wage));
 			}
+		}
+		else
+		{
+			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN")) && year.equals(mySearchText)
+			{
+			
+			double wage = Double.parseDouble(wages);
+			
+			String myKey = year+";"+jobtitle+";"+caseStatus+";"+workPosition;
+			
+			context.write(new Text(myKey),new DoubleWritable(wage));
+		}
 			
 		}
 	}
@@ -179,14 +195,21 @@ public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,Text
 public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
 {
 	Configuration conf = new Configuration();
+	if(args.length >2)
+	{
+		conf.set("myText", args[2]);
+	}
 	conf.set("mapreduce.textOutputformat.seperator","/t");
 	Job job = Job.getInstance(conf);
 	job.setJarByClass(AvgWage.class);
 	job.setMapperClass(AvgWageMapper.class);
-	job.setPartitionerClass(AvgWagePartitioner.class);
 	job.setReducerClass(AvgWageReducer.class);
-	job.setSortComparatorClass(DecreasingComparator.class);
+	if (args[2].equals("all"))
+	{
+	job.setPartitionerClass(AvgWagePartitioner.class);
 	job.setNumReduceTasks(7);
+	}
+	job.setSortComparatorClass(DecreasingComparator.class);
 	job.setMapOutputKeyClass(Text.class);
 	job.setMapOutputValueClass(DoubleWritable.class);
 	job.setOutputKeyClass(Text.class);
