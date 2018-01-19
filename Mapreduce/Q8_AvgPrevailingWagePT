@@ -1,0 +1,194 @@
+import java.io.IOException;
+
+
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.DoubleWritable.Comparator;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.LongWritable.DecreasingComparator;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+
+public class AvgWagePT {
+
+	
+public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWritable>
+	
+	{
+		public void map(LongWritable key, Text value, Context context) throws IOException,InterruptedException
+		{
+			String mySearchText = context.getConfiguration().get("myText")
+      
+      String h1bdata[] = value.toString().split("\t");
+			
+			String caseStatus = h1bdata[1];
+			String year = h1bdata[7];
+			String jobtitle = h1bdata[4];
+			String workPosition = h1bdata[5];
+			String wages = h1bdata[6];
+			
+			if(mySearchText.equalsIgnoreCase("all"))
+ {
+      
+      if(workPosition.equals("N"))
+		{
+			
+			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN"))
+			{
+			
+			double wage = Double.parseDouble(wages);
+			
+			String myKey = year+";"+jobtitle+";"+caseStatus+";"+workPosition;
+			
+			context.write(new Text(myKey),new DoubleWritable(wage));
+			}
+		}
+  }
+  else
+  {
+      if(workPosition.equals("N"))
+		{
+			
+			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN")) && year.equals(mySearchText)
+			{
+			
+			double wage = Double.parseDouble(wages);
+			
+			String myKey = year+";"+jobtitle+";"+caseStatus+";"+workPosition;
+			
+			context.write(new Text(myKey),new DoubleWritable(wage));
+			}
+		}
+  }
+  
+			}
+	    }
+
+
+public static class AvgWagePartitioner extends Partitioner<Text,DoubleWritable>
+{
+	
+	public int getPartition(Text key,DoubleWritable value,int numReduceTasks)
+	{
+	
+		String mapKey[] = key.toString().split(";");
+		
+		String year = mapKey[0];
+		
+		
+		if(mapKey[0].equals("2011")) 
+		{
+			return 1;
+		
+		}
+		
+
+		if(mapKey[0].equals("2012"))
+		{
+			return 2;
+		
+		}
+
+		if(mapKey[0].equals("2013")) 
+		{
+			return 3;
+		
+		}
+
+		if(year.equals("2014"))
+		{
+			return 4;
+		
+		}
+
+		if(year.equals("2015"))
+		{
+			return 5;
+		
+		}
+
+		if(year.equals("2016"))
+		{
+			return 6;
+		
+		}
+		else
+			return 7;
+	}
+	
+}
+
+
+public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,DoubleWritable>
+{
+				double total = 0.0;
+	
+	public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException,InterruptedException
+	{
+
+				
+				String reduceKey[] = key.toString().split(";");
+				String caseStatus = reduceKey[2];
+				String workPosition = reduceKey[3];
+				
+				double parttime_wage = 0.0;
+				
+				double parttime_avg = 0.0;
+				
+			for(DoubleWritable eachval : values)
+			
+		{ 
+				
+				parttime_wage+=eachval.get();
+				total++;
+		}
+			
+			
+			 parttime_avg = parttime_wage/total;
+			 			
+			
+		context.write(key,new DoubleWritable(parttime_avg));
+		
+	}
+}
+
+public static void main(String[] args) throws IOException,InterruptedException,ClassCastException,ClassNotFoundException
+{
+	Configuration conf = new Configuration();
+  if(args.length >2)
+	{
+		conf.set("myText", args[2]);
+  }
+	conf.set("mapreduce.textOutputformat.seperator","/t");
+	Job job = Job.getInstance(conf);
+	job.setJarByClass(AvgWagePT.class);
+	job.setMapperClass(AvgWageMapper.class);
+	job.setReducerClass(AvgWageReducer.class);
+  if (args[2].equals("all"))
+  {
+  job.setPartitionerClass(AvgWagePartitioner.class);
+	job.setNumReduceTasks(7);
+  }
+  job.setSortComparatorClass(Comparator.class);
+	job.setMapOutputKeyClass(Text.class);
+	job.setMapOutputValueClass(DoubleWritable.class);
+	job.setOutputKeyClass(Text.class);
+	job.setOutputValueClass(Text.class);
+	
+	FileInputFormat.addInputPath(job,new Path(args[0]));
+	FileOutputFormat.setOutputPath(job,new Path(args[1]));
+	
+	job.waitForCompletion(true);
+}
+}
+
