@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 
 
-public class AvgWage {
+public class AvgWageFT {
 
 	
 public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWritable>
@@ -36,8 +36,12 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 			String workPosition = h1bdata[5];
 			String wages = h1bdata[6];
 			
-			if(mySearchText.equalsIgnoreCase("all"))
+	if(mySearchText.equalsIgnoreCase("all"))
+			
+	{
+			if(workPosition.equals("Y"))
 		{
+			
 			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN"))
 			{
 			
@@ -48,8 +52,12 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 			context.write(new Text(myKey),new DoubleWritable(wage));
 			}
 		}
-		else
+	}
+	else
+	{
+			if(workPosition.equals("Y"))
 		{
+			
 			if(caseStatus.equals("CERTIFIED") || caseStatus.equals("CERTIFIED-WITHDRAWN")) && year.equals(mySearchText)
 			{
 			
@@ -58,10 +66,12 @@ public static class AvgWageMapper extends Mapper<LongWritable,Text,Text,DoubleWr
 			String myKey = year+";"+jobtitle+";"+caseStatus+";"+workPosition;
 			
 			context.write(new Text(myKey),new DoubleWritable(wage));
-		}
-			
+			}
 		}
 	}
+	
+			}
+			}
 
 
 public static class AvgWagePartitioner extends Partitioner<Text,DoubleWritable>
@@ -118,7 +128,7 @@ public static class AvgWagePartitioner extends Partitioner<Text,DoubleWritable>
 }
 
 
-public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,Text>
+public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,DoubleWritable>
 {
 				double total = 0.0;
 	
@@ -130,64 +140,23 @@ public static class AvgWageReducer extends Reducer<Text,DoubleWritable,Text,Text
 				String caseStatus = reduceKey[2];
 				String workPosition = reduceKey[3];
 				
+				double fulltime_wage = 0.0;
 				
-				double certified_f = 0.0;
-				double certified_p = 0.0;
-				double certified_wd_f = 0.0;
-				double certified_wd_p = 0.0;
-				
-				double cert_f_avg = 0.0;
-				double cert_p_avg = 0.0;
-				double cert_wd_f_avg = 0.0;
-				double cert_wd_p_avg = 0.0;
+				double fulltime_avg = 0.0;
 				
 			for(DoubleWritable eachval : values)
 			
 		{ 
 				
-			if(reduceKey[2].equals("CERTIFIED")) 
-					
-			{
-				if(reduceKey[3].equals("Y"))
-				{
-				certified_f+= eachval.get();
-				}
-				
-				else if(reduceKey[3].equals("N"))
-				certified_p+= eachval.get();
-			}
-			
-						
-			
-			 if(reduceKey[2].equals("CERTIFIED-WITHDRAWN")) 
-			{
-				 if(reduceKey[3].equals("Y"))
-				certified_wd_f+= eachval.get();
-				 
-				 else if(reduceKey[3].equals("N"))
-				certified_wd_p+= eachval.get();
-			}
-				
-			
-			 total++;
+				fulltime_wage+=eachval.get();
+				total++;
 		}
 			
 			
+			 fulltime_avg = fulltime_wage/total;
+			 			
 			
-			
-			 cert_f_avg = (certified_f)/total;
-			 cert_p_avg = (certified_p)/total;
-			 cert_wd_f_avg = (certified_wd_f)/total;
-			 cert_wd_p_avg = (certified_wd_p)/total;
-			 
-			
-		
-			//String myCount = String.format("%f\t%f\t%f\t%f", certified_f, certified_p, certified_wd_f, certified_wd_p);
-			
-			 String myValue = String.format("%f", cert_f_avg) +","+String.format("%f", cert_p_avg)+","+String.format("%f", cert_wd_f_avg)+","+String.format("%f", cert_wd_p_avg);
-		
-		context.write(key,new Text(myValue));
-		
+		context.write(key,new DoubleWritable(fulltime_avg));
 		
 	}
 }
@@ -201,7 +170,7 @@ public static void main(String[] args) throws IOException,InterruptedException,C
 	}
 	conf.set("mapreduce.textOutputformat.seperator","/t");
 	Job job = Job.getInstance(conf);
-	job.setJarByClass(AvgWage.class);
+	job.setJarByClass(AvgWageFT.class);
 	job.setMapperClass(AvgWageMapper.class);
 	job.setReducerClass(AvgWageReducer.class);
 	if (args[2].equals("all"))
