@@ -1,0 +1,42 @@
+
+--Move the required pig output to HDFS.
+
+hadoop fs -mkdir /Q10_h1b
+hadoop fs -put /home/hduser/h1bOPs/Pig/Q10_pig./part-r-00000 /Q10_h1b
+
+--In mysql
+
+create database h1b;
+
+use h1b;
+
+CREATE TABLE h1b_final_project(job_title VARCHAR(255) NOT NULL,success_rate FLOAT NOT NULL,applications INT NOT NULL);
+
+
+--In sqoop
+
+sqoop list-tables --connect jdbc:mysql://localhost/h1b --username root --password omhaya25;
+
+
+sqoop export --connect jdbc:mysql://localhost/h1b --username root --password omhaya25 --table h1b_finale --update-mode  allowinsert --export-dir /Q10_h1b/part-r-00000 --input-fields-terminated-by '\t' ;
+
+--Output
+
+
+mysql> select * from h1b_final_project;
++------------------------------------------------------------+--------------+--------------+
+| job_title                                                  | success_rate | applications |
++------------------------------------------------------------+--------------+--------------+
+| COMPUTER PROGRAMMER / CONFIGURER 2                         |          100 |         1276 |
+| SOFTWARE DEVELOPERS, APPLICATIONS                          |      92.9707 |         1195 |
+| RESEARCH FELLOW                                            |      96.3551 |         5981 |
+| POSTDOCTORAL FELLOW                                        |      94.8581 |         7857 |
+| COMPUTER SYSTEM ANALYST                                    |      92.7525 |         3753 |
+| APPLICATIONS DEVELOPER                                     |      96.3458 |         3366 |
+| ASSOCIATE CONSULTANT - US                                  |      99.9317 |         4393 |
+| OCCUPATIONAL THERAPIST                                     |      92.7203 |         4437 |
+| SENIOR APPLICATION DEVELOPER                               |      92.6209 |         1965 |
+| SENIOR PROJECT MANAGER                                     |      92.6108 |         1015 |
+
+
+
