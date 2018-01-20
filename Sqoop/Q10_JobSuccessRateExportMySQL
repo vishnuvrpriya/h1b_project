@@ -18,7 +18,7 @@ CREATE TABLE h1b_final_project(job_title VARCHAR(255) NOT NULL,success_rate FLOA
 sqoop list-tables --connect jdbc:mysql://localhost/h1b --username root --password omhaya25;
 
 
-sqoop export --connect jdbc:mysql://localhost/h1b --username root --password omhaya25 --table h1b_finale --update-mode  allowinsert --export-dir /Q10_h1b/part-r-00000 --input-fields-terminated-by '\t' ;
+sqoop export --connect jdbc:mysql://localhost/h1b --username root --password omhaya25 --table h1b_final_project --update-mode  allowinsert --export-dir /Q10_h1b/part-r-00000 --input-fields-terminated-by '\t' ;
 
 --Output
 
