@@ -46,9 +46,9 @@ while [ opt != '' ]
         case $opt in
         1A) clear;
         option_picked "1A) Is the number of petitions with Data Engineer job title increasing over time?";
-                 hadoop fs -rm -r /H1B_Project/MapReduce/Output/Q1ADataEngg
-		 hadoop jar DataJobFinal.jar DataJob /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q1ADataEngg
-		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q1ADataEngg/p*
+                 hadoop fs -rm -r /H1B_Project
+		 hadoop jar DataJobFinal.jar DataJob /h1bmp/h1bfinaldata.txt /H1B_Project/Q1ADataEngg
+		 hadoop fs -cat /H1B_Project/Q1ADataEngg/p*
         show_menu;
         ;;
 
@@ -60,9 +60,9 @@ while [ opt != '' ]
 
 	2A) clear;
         option_picked "2A) Which part of the US has the most Data Engineer jobs for each year?";
-	 hadoop fs -rm -r /H1B_Project/MapReduce/Output/Q2AUSParts
-		 hadoop jar USPartsFinal.jar USParts /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q2AUSParts
-		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q2AUSParts/p*
+	 hadoop fs -rm -r /H1B_Project
+		 hadoop jar USPartsFinal.jar USParts /h1bmp/h1bfinaldata.txt /H1B_Project/Q2AUSParts
+		 hadoop fs -cat /H1B_Project/Q2AUSParts/p*
         show_menu;	
         ;;
 
@@ -86,9 +86,9 @@ while [ opt != '' ]
         option_picked "4)Which top 5 employers file the most petitions each year?";
                  echo -e "Enter the year (2011,2012,2013,2014,2015,2016,all)"
                     read var
-                  hadoop fs -rm -r /H1B_Project/MapReduce/Output/Q4Top5Employers
-		 hadoop jar Top5EmployersFinal.jar Top5Employers /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q4Top5Employers
-		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q4Top5Employers/p*
+                  hadoop fs -rm -r /H1B_Project
+		 hadoop jar Top5EmployersFinal.jar Top5Employers /h1bmp/h1bfinaldata.txt /H1B_Project/Q4Top5Employers
+		 hadoop fs -cat /H1B_Project/Q4Top5Employers/p*
         show_menu;
         ;;
            
@@ -133,18 +133,18 @@ while [ opt != '' ]
                          option_picked "Full Time Position" 
                          echo -e "Enter the year (2011,2012,2013,2014,2015,2016,ALL)"
                           read var
-			hadoop fs -rm -r  /H1B_Project/MapReduce/Output/Q8AAvgPrWageForEachJobForEachYearFullTime/output
-		 hadoop jar AvgWageFTFinal.jar AvgWageFT /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q8AAvgPrWageForEachJobForEachYearFullTime/output $var;
-		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q8AAvgPrWageForEachJobForEachYearFullTime/output/p*
+			hadoop fs -rm -r  /H1B_Project
+		 hadoop jar AvgWageFTFinal.jar AvgWageFT /h1bmp/h1bfinaldata.txt /H1B_Project/Q8AAvgPrWageForEachJobForEachYearFullTime $var;
+		 hadoop fs -cat /H1B_Project/Q8AAvgPrWageForEachJobForEachYearFullTime/p*
         ;;
 
 			"2")
 			  option_picked "Part Time Position" 
                          echo -e "Enter the year (2011,2012,2013,2014,2015,2016,ALL)"
                           read var
-                         hadoop fs -rm -r  /H1B_Project/MapReduce/Output/Q8BAvgPrWageForEachJobForEachYearPartTime/Output
-                        hadoop jar AvgWagePTFinal.jar AvgWagePT /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q8AAvgPrWageForEachJobForEachYearFullTime/output $var;
-		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q8AAvgPrWageForEachJobForEachYearFullTime/output/p*
+                         hadoop fs -rm -r  /H1B_Project
+                        hadoop jar AvgWagePTFinal.jar AvgWagePT /h1bmp/h1bfinaldata.txt /H1B_Project/Q8BAvgPrWageForEachJobForEachYearFullTime/output $var;
+		 hadoop fs -cat /H1B_Project/Q8BAvgPrWageForEachJobForEachYearFullTime/p*
         ;;
 
 		esac
