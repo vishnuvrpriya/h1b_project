@@ -47,7 +47,7 @@ while [ opt != '' ]
         1A) clear;
         option_picked "1A) Is the number of petitions with Data Engineer job title increasing over time?";
                  hadoop fs -rm -r /H1B_Project/MapReduce/Output/Q1ADataEngg
-		 hadoop jar DataJob.jar   DataJobFinal /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q1ADataEngg
+		 hadoop jar DataJobFinal.jar DataJob /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q1ADataEngg
 		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q1ADataEngg/p*
         show_menu;
         ;;
@@ -61,7 +61,7 @@ while [ opt != '' ]
 	2A) clear;
         option_picked "2A) Which part of the US has the most Data Engineer jobs for each year?";
 	 hadoop fs -rm -r /H1B_Project/MapReduce/Output/Q2AUSParts
-		 hadoop jar DataJob.jar USPartsFinal /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q2AUSParts
+		 hadoop jar USPartsFinal.jar USParts /h1bmp/h1bfinaldata.txt /H1B_Project/MapReduce/Output/Q2AUSParts
 		 hadoop fs -cat /H1B_Project/MapReduce/Output/Q2AUSParts/p*
         show_menu;	
         ;;
