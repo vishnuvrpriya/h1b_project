@@ -7,7 +7,7 @@ show_menu()
     FGRED=`echo "\033[41m"`
     RED_TEXT=`echo "\033[31m"`
     ENTER_LINE=`echo "\033[33m"`
-        echo -e "${MENU}**********************ANALYSIS AND SUMMERIZATION OF H1B APPLICANTS***********************${NORMAL}"
+        echo -e "${MENU}**********************ANALYSIS AND SUMMARIZATION OF H1B APPLICANTS***********************${NORMAL}"
     echo -e "${MENU}${NUMBER} 1A) ${MENU} Is the number of petitions with Data Engineer job title increasing over time?(MR)${NORMAL}"
     echo -e "${MENU}${NUMBER} 1B) ${MENU} Find top 5 job titles who are having highest growth in applications.(HIVE) ${NORMAL}"
     echo -e "${MENU}${NUMBER} 2A) ${MENU} Which part of the US has the most Data Engineer jobs for each year?(MR) ${NORMAL}"
