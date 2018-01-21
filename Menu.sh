@@ -46,8 +46,11 @@ while [ opt != '' ]
         case $opt in
         1A) clear;
         option_picked "1A) Is the number of petitions with Data Engineer job title increasing over time?";
-                 hadoop fs -rm -r /H1B_Project
-		 hadoop jar DataJobFinal.jar DataJob /h1bmp/h1bfinaldata.txt /H1B_Project/Q1ADataEngg
+                echo -e "Enter the year (2011,2012,2013,2014,2015,2016,all)"
+		read var
+		hadoop fs -rm -r /H1B_Project
+		hadoop fs -mkdir /H1B_Project
+		 hadoop jar DataJobFinal.jar DataJob /h1bmp/h1bfinaldata.txt /H1B_Project/Q1ADataEngg $var
 		 hadoop fs -cat /H1B_Project/Q1ADataEngg/p*
         show_menu;
         ;;
@@ -60,8 +63,11 @@ while [ opt != '' ]
 
 	2A) clear;
         option_picked "2A) Which part of the US has the most Data Engineer jobs for each year?";
-	 hadoop fs -rm -r /H1B_Project
-		 hadoop jar USPartsFinal.jar USParts /h1bmp/h1bfinaldata.txt /H1B_Project/Q2AUSParts
+	 echo -e "Enter the year (2011,2012,2013,2014,2015,2016,all)"
+		read var
+		hadoop fs -rm -r /H1B_Project
+		hadoop fs -mkdir /H1B_Project
+		hadoop jar USPartsFinal.jar USParts /h1bmp/h1bfinaldata.txt /H1B_Project/Q2AUSParts $var
 		 hadoop fs -cat /H1B_Project/Q2AUSParts/p*
         show_menu;	
         ;;
@@ -77,7 +83,7 @@ while [ opt != '' ]
 	3) clear;
         option_picked "3) Which industry has the most number of Data Scientist positions?";
 	 
-         hive -e  "select count(job_title) as jobapps,soc_name from h1b_final where job_title = 'DATA SCIENTIST' and case_status = 'CERTIFIED' group by soc_name order by jobapps desc limit 1;"
+         hive -e  "use h1b;select count(job_title) as jobapps,soc_name from h1b_final where job_title = 'DATA SCIENTIST' and case_status = 'CERTIFIED' group by soc_name order by jobapps desc limit 1;"
 
         show_menu;
         ;;
@@ -87,7 +93,8 @@ while [ opt != '' ]
                  echo -e "Enter the year (2011,2012,2013,2014,2015,2016,all)"
                     read var
                   hadoop fs -rm -r /H1B_Project
-		 hadoop jar Top5EmployersFinal.jar Top5Employers /h1bmp/h1bfinaldata.txt /H1B_Project/Q4Top5Employers
+		  hadoop fs -mkdir /H1B_Project 
+		 hadoop jar Top5EmployersFinal.jar Top5Employers /h1bmp/h1bfinaldata.txt /H1B_Project/Q4Top5Employers $var
 		 hadoop fs -cat /H1B_Project/Q4Top5Employers/p*
         show_menu;
         ;;
@@ -102,7 +109,7 @@ while [ opt != '' ]
         option_picked "5B)Find the most popular top 10 job positions for Certified H1B visa applications for each year ?";
 	    echo -e "Enter the year (2011,2012,2013,2014,2015,2016)"
 		read var
-	    hive -e "select count(*) as apps,year,job_title from h1b_final where case_status = 'CERTIFIED' and year = '$var' group by year,job_title order by apps desc limit 10;"
+	    hive -e "use h1b;select count(*) as apps,year,job_title from h1b_final where case_status = 'CERTIFIED' and year = '$var' group by year,job_title order by apps desc limit 10;"
         show_menu;
         ;;
        
